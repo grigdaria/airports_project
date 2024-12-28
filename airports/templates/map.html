@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Карта аэропортов</title>
+    <style>
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+        .hidden {
+            opacity: 0.2; /* Полупрозрачность для скрытых маркеров */
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <h1>Карта аэропортов мира</h1>
+    <div id="map"></div>
+
+    <script>
+        var map = L.map('map').setView([20, 0], 2);
+
+        // Используем Leaflet для создания карты
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Получаем данные об аэропортах с сервера
+        fetch('/airports')
+            .then(response => response.json())
+            .then(airports => {
+                var markers = [];
+                var currentMarker = null; // Для хранения текущего открытого маркера
+
+                airports.forEach(function(airport) {
+                    var marker = L.marker([airport.latitude, airport.longitude]).addTo(map)
+                        .on('click', function(e) {
+                            // Если текущий маркер не равен выбранному, скрываем остальные
+                            if (currentMarker !== marker) {
+                                markers.forEach(function(m) {
+                                    m.getElement().classList.add('hidden'); // Добавляем класс для скрытия
+                                });
+
+                                // Создаем контент для попапа с формой ввода даты и времени
+                                var popupContent = `
+                                    <strong>${airport.airport_name}</strong><br>
+                                    <label for="date">Дата: </label>
+                                    <input type="date" id="date" required><br>
+                                    <label for="time">Время: </label>
+                                    <input type="time" id="time" required><br>
+                                    <button id="submit">Подтвердить</button>
+                                `;
+
+                                marker.bindPopup(popupContent, { closeOnClick: false }).openPopup(); // Открываем попап с формой
+                                currentMarker = marker; // Сохраняем текущий маркер
+                                map.setView([airport.latitude, airport.longitude], 5); // Приближаем к выбранному аэропорту
+
+                                // Обработчик события для кнопки подтверждения
+                                document.getElementById('submit').onclick = function() {
+                                    var date = document.getElementById('date').value;
+                                    var time = document.getElementById('time').value;
+                                    if (date && time) {
+                                        alert(`Вы выбрали аэропорт: ${airport.name}\nДата: ${date}\nВремя: ${time}`);
+                                        currentMarker.closePopup(); // Закрываем попап после подтверждения
+                                        currentMarker = null; // Сбрасываем текущий маркер
+
+                                        // Показываем все маркеры снова
+                                        markers.forEach(function(m) {
+                                            m.getElement().classList.remove('hidden'); // Убираем класс для отображения
+                                        });
+                                    } else {
+                                        alert('Пожалуйста, введите дату и время.');
+                                    }
+                                };
+                            }
+                        });
+
+                    markers.push(marker);
+                });
+
+                // Скрываем попап и показываем все маркеры при нажатии на карту
+                map.on('click', function(e) {
+                    if (currentMarker) {
+                        currentMarker.closePopup(); // Закрываем попап текущего маркера
+                        currentMarker = null; // Сбрасываем текущий маркер
+
+                        // Показываем все маркеры снова
+                        markers.forEach(function(m) {
+                            m.getElement().classList.remove('hidden'); // Убираем класс для отображения
+                        });
+                    }
+                });
+            })
+            .catch(error => console.error('Ошибка при загрузке аэропортов:', error));
+    </script>
+</body>
+</html>

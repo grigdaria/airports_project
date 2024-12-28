@@ -1,0 +1,2 @@
+SUPABASE_URL = 'https://gzvczizfaitegduuldza.supabase.co'
+SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6dmN6aXpmYWl0ZWdkdXVsZHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUwNDk5NDAsImV4cCI6MjA1MDYyNTk0MH0.Q15OmdSA-uofS_bPzsVSPYMGv9FapLdJ-LKaYClLXD0'
